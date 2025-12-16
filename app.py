@@ -1,6 +1,8 @@
 import os
 
+import db
 import psycopg2
+import schemas
 from db_setup import get_connection
 from fastapi import FastAPI, HTTPException
 
@@ -25,7 +27,49 @@ but will have different HTTP-verbs.
 #     con = get_connection()
 #     items = get_items(con)
 #     return {"items": items}
+@app.get("/presentations")
+def read_presentations():
+    conn = get_connection()
+    if conn is None:
+        raise HTTPException(status_code=500, detail="Kunde inte koppla till databasen")
+    
+    try:
+        # Här använder vi din funktion från db.py!
+        results = db.get_all_presentations(conn)
+        return results
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        conn.close() # Jätteviktigt att stänga kopplingen
+# 1. Skapa användare (Måste göras först!)
+@app.post("/users")
+def add_user(user: schemas.UserCreate):
+    conn = get_connection()
+    try:
+        # Anropa funktionen i db.py
+        user_id = db.create_user(conn, user.email, user.password_hash, user.avatar_url)
+        conn.commit() # Spara ändringarna permanent
+        return {"id": user_id, "message": "Användare skapad!"}
+    except Exception as e:
+        conn.rollback() # Ångra om något går fel
+        raise HTTPException(status_code=400, detail=str(e))
+    finally:
+        conn.close()
 
+# 2. Skapa presentation
+@app.post("/presentations")
+def add_presentation(presentation: schemas.PresentationCreate):
+    conn = get_connection()
+    try:
+        # Här skickar vi med owner_id som vi får från anropet
+        new_id = db.create_presentation(conn, presentation.title, presentation.owner_id)
+        conn.commit()
+        return {"id": new_id, "message": "Presentation skapad!"}
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=400, detail=str(e))
+    finally:
+        conn.close()
 
 # INSPIRATION FOR A POST-ENDPOINT, uses a pydantic model to validate
 # @app.post("/validation_items/")
