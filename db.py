@@ -141,7 +141,7 @@ def presentations_list(conn):
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute("""
                 SELECT p.id, p.owner_id, p.title, p.created_at, p.updated_at,
-                       u.email AS owner_email
+                    u.email AS owner_email
                 FROM presentations p
                 JOIN users u ON u.id = p.owner_id
                 ORDER BY p.created_at DESC;
@@ -153,7 +153,7 @@ def presentations_get(conn, presentation_id: int):
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute("""
                 SELECT p.id, p.owner_id, p.title, p.created_at, p.updated_at,
-                       u.email AS owner_email
+                    u.email AS owner_email
                 FROM presentations p
                 JOIN users u ON u.id = p.owner_id
                 WHERE p.id = %s;
@@ -214,8 +214,8 @@ def questions_list_for_presentation(conn, presentation_id: int):
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute("""
                 SELECT q.id, q.presentation_id, q.type_code, q.text, q.media_url,
-                       q.order_index, q.settings, q.created_at, q.updated_at,
-                       qt.label AS type_label
+                    q.order_index, q.settings, q.created_at, q.updated_at,
+                    qt.label AS type_label
                 FROM questions q
                 JOIN question_types qt ON qt.code = q.type_code
                 WHERE q.presentation_id = %s
@@ -228,8 +228,8 @@ def questions_get(conn, question_id: int):
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute("""
                 SELECT q.id, q.presentation_id, q.type_code, q.text, q.media_url,
-                       q.order_index, q.settings, q.created_at, q.updated_at,
-                       qt.label AS type_label
+                    q.order_index, q.settings, q.created_at, q.updated_at,
+                    qt.label AS type_label
                 FROM questions q
                 JOIN question_types qt ON qt.code = q.type_code
                 WHERE q.id = %s;
@@ -329,8 +329,8 @@ def sessions_list(conn):
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute("""
                 SELECT ls.id, ls.presentation_id, ls.access_code, ls.status,
-                       ls.current_question_id, ls.created_at, ls.started_at, ls.ended_at,
-                       p.title AS presentation_title
+                    ls.current_question_id, ls.created_at, ls.started_at, ls.ended_at,
+                    p.title AS presentation_title
                 FROM live_sessions ls
                 JOIN presentations p ON p.id = ls.presentation_id
                 ORDER BY ls.created_at DESC;
@@ -342,7 +342,7 @@ def sessions_get(conn, session_id: int):
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute("""
                 SELECT id, presentation_id, access_code, status, current_question_id,
-                       created_at, started_at, ended_at
+                    created_at, started_at, ended_at
                 FROM live_sessions
                 WHERE id = %s;
             """, (session_id,))
@@ -353,7 +353,7 @@ def sessions_get_by_code(conn, access_code: str):
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute("""
                 SELECT id, presentation_id, access_code, status, current_question_id,
-                       created_at, started_at, ended_at
+                    created_at, started_at, ended_at
                 FROM live_sessions
                 WHERE access_code = %s;
             """, (access_code,))
@@ -459,8 +459,8 @@ def votes_list_for_session(conn, session_id: int):
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute("""
                 SELECT v.id, v.session_id, v.participant_id, v.question_id, v.option_id, v.text_answer, v.created_at,
-                       p.nickname,
-                       q.text AS question_text
+                    p.nickname,
+                    q.text AS question_text
                 FROM votes v
                 JOIN participants p ON p.id = v.participant_id
                 JOIN questions q ON q.id = v.question_id
@@ -474,7 +474,7 @@ def votes_list_for_question(conn, session_id: int, question_id: int):
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute("""
                 SELECT v.id, v.session_id, v.participant_id, v.question_id, v.option_id, v.text_answer, v.created_at,
-                       p.nickname
+                    p.nickname
                 FROM votes v
                 JOIN participants p ON p.id = v.participant_id
                 WHERE v.session_id = %s AND v.question_id = %s
@@ -502,8 +502,8 @@ def qna_messages_list_for_session(conn, session_id: int):
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute("""
                 SELECT m.id, m.session_id, m.participant_id, m.text, m.is_answered, m.is_hidden, m.created_at,
-                       p.nickname,
-                       (SELECT COUNT(*) FROM qna_upvotes u WHERE u.message_id = m.id) AS upvote_count
+                    p.nickname,
+                    (SELECT COUNT(*) FROM qna_upvotes u WHERE u.message_id = m.id) AS upvote_count
                 FROM qna_messages m
                 LEFT JOIN participants p ON p.id = m.participant_id
                 WHERE m.session_id = %s
